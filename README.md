@@ -9,8 +9,18 @@ risk discipline.
 
 ## Status
 
-🚧 **Phase 0 — Foundations** (scaffolding in place; design docs in progress).
-See the full plan in `Trading_Automation_Roadmap.docx` and `docs/`.
+🚧 **Phase 0 — Foundations.** Repo scaffolded; `backend/` foundation slice (domain models,
+config, idempotency, logging) in place with tests. See `Trading_Automation_Roadmap.docx` and `docs/`.
+
+## Monorepo layout
+
+```
+backend/     Python trading platform (package `qtrade`) — see backend/src/qtrade
+frontend/    React.js UI (added later; Streamlit interim) — no credentials here
+docs/        HLD, LLD, architecture decision records (ADRs)
+.claude/     AI-assisted-development agents & project skills
+CLAUDE.md    operating rules for AI-assisted development — read it first
+```
 
 ## Why this exists
 
@@ -18,7 +28,7 @@ The goal is a mathematically sound, self-improving system — not a chatbot wrap
 The decision core (signals, risk, sizing, execution) is deterministic, tested code.
 A language model is used only to turn news/filings into *features*, never to place trades.
 
-## Architecture (7 layers)
+## Backend architecture (7 layers)
 
 | Layer | Package | Responsibility |
 |---|---|---|
@@ -28,7 +38,7 @@ A language model is used only to turn news/filings into *features*, never to pla
 | Risk & portfolio | `qtrade.risk` | Sizing, constraints, kill-switch |
 | Backtest & sim | `qtrade.backtest` | Event-driven engine, realistic costs, walk-forward |
 | Execution | `qtrade.execution` | Order routing, fills, reconciliation |
-| Ops | `qtrade.ops` | Dashboards, alerts, scheduling, audit log |
+| Ops | `qtrade.ops` | Dashboard/API, alerts, scheduling, audit log |
 
 Details: `docs/HLD.md` (high-level) and `docs/LLD.md` (low-level, incl. concurrency/locking).
 
@@ -46,26 +56,14 @@ Prefect orchestration · static-IP host for compliant execution.
 4. **Live auto-execution** — small capital; **Stage 1 swing/daily**, then **Stage 2 intraday**.
 5. **Self-improvement** — champion/challenger promotion with out-of-sample gates.
 
-## Getting started (dev)
+## Getting started (backend dev)
 
 ```bash
-# Python 3.10+
+cd backend
 python -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"
 cp .env.example .env        # fill in Kite keys + DB URL (never commit .env)
 make check                  # ruff + mypy + pytest
-```
-
-## Project layout
-
-```
-src/qtrade/      core packages (one per architecture layer)
-docs/            HLD, LLD, architecture decision records
-tests/           unit + integration (integration uses a paper/sim broker)
-scripts/         operational scripts (data pulls, EOD reconciliation)
-notebooks/       research scratch
-config/          environment / strategy configuration
-CLAUDE.md        operating rules for AI-assisted development — read it first
 ```
 
 ## Safety & compliance

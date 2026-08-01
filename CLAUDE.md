@@ -3,6 +3,12 @@
 This file is read by Claude (and any AI coding assistant) on every task in this repo.
 It encodes the architecture, the non-negotiable rules, and the conventions. Follow it.
 
+## 0. Repository layout (monorepo)
+
+- `backend/` — the Python trading platform (package `qtrade`). Run tooling from here (`cd backend`).
+- `frontend/` — the React.js UI (added later; Streamlit interim). Never holds broker/AWS credentials.
+- `docs/`, `.claude/`, `README.md`, `CLAUDE.md`, `.gitignore` — repo-level, describe the whole project.
+
 ## 1. What this project is
 
 `qtrade` is a **personal, single-account systematic trading platform** for Indian markets
@@ -26,8 +32,8 @@ to others. Full plan: `Trading_Automation_Roadmap.docx`; design in `docs/HLD.md`
    structurally unable to hit the live orders endpoint — use the paper/sim broker.
 6. **The backtester never looks ahead.** A bar's decision may only use data available at that
    bar's close. Costs (brokerage, STT, GST, stamp duty, slippage, impact) are always applied.
-7. **Secrets never touch git.** Credentials live in `.env` (git-ignored) / a vault. Never hard-code
-   API keys, and never log an access token.
+7. **Secrets never touch git.** Credentials live in `backend/.env` (git-ignored) / a vault. Never
+   hard-code API keys, and never log an access token.
 8. **Self-improvement is gated.** No model auto-promotes to live. A challenger must beat the live
    champion out-of-sample before promotion; the kill-switch still outranks it.
 
@@ -49,10 +55,10 @@ to others. Full plan: `Trading_Automation_Roadmap.docx`; design in `docs/HLD.md`
 - **Stage 2 (only after Stage 1 proven): intraday tick-reactive** — many orders/day; latency and
   Kite per-second/daily request budgets matter. Only stage where a compiled hot path may be revisited.
 
-## 5. Repository map
+## 5. Backend package map (`backend/src/qtrade/`)
 
 ```
-src/qtrade/
+qtrade/
   common/     config, logging, types, time/calendar helpers, idempotency keys
   data/       ingestion: Kite historical + live WebSocket, corporate actions, news
   storage/    TimescaleDB + Parquet/DuckDB access; point-in-time correctness
@@ -60,22 +66,22 @@ src/qtrade/
   risk/       sizing, portfolio construction, hard limits, kill-switch
   backtest/   event-driven engine, cost model, walk-forward, metrics
   execution/  order routing, slicing, fills, reconciliation, broker adapters
-  ops/        dashboards, alerts, scheduling, audit log
+  ops/        dashboards/API, alerts, scheduling, audit log
   llm/        news/sentiment feature generation (upstream only)
-docs/         HLD.md, LLD.md, adr/ (architecture decision records)
-tests/        unit/ + integration/
 ```
+Also under `backend/`: `tests/` (unit + integration), `config/`, `scripts/`, `notebooks/`,
+`pyproject.toml`, `Makefile`, `.env`. Repo-level: `docs/` (HLD, LLD, ADRs), `.claude/`, `frontend/`.
 
 ## 6. Conventions
 
-- **Layout:** `src/` layout, package `qtrade`. Type-hint everything (`mypy` strict-ish).
-- **Config:** via `pydantic-settings` reading `.env`; no magic constants scattered in code.
+- **Layout:** `src/` layout under `backend/`, package `qtrade`. Type-hint everything (`mypy` strict-ish).
+- **Config:** via `pydantic-settings` reading `backend/.env`; no magic constants scattered in code.
 - **Money & prices:** use `Decimal` or integer paise where correctness matters; never bare float for cash.
 - **Time:** store/compute in UTC internally; display IST. Use `pandas-market-calendars` for sessions.
 - **Logging:** structured (`structlog`); every trading decision and order is logged to the audit trail.
 - **Errors:** fail closed. On uncertainty about state (e.g. unknown order status), do NOT re-send —
   reconcile against the broker first.
-- **Tooling:** `ruff` (format+lint), `mypy`, `pytest`. Run `make check` before considering work done.
+- **Tooling:** `ruff` (format+lint), `mypy`, `pytest`. Run `make check` from `backend/` before done.
 
 ## 7. Testing requirements
 
