@@ -1,0 +1,40 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Env & secrets  ── NEVER commit credentials
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+secrets/
+access_token*.json
+
+# Data & artifacts (large / regenerable / sensitive)
+data/
+*.parquet
+*.duckdb
+*.sqlite
+*.db
+logs/
+*.log
+
+# Notebooks scratch
+.ipynb_checkpoints/
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
